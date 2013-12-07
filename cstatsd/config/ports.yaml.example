@@ -1,4 +1,4 @@
-interval: 5
+interval: 1
 
 ports:
         6667: UnrealIRCd
