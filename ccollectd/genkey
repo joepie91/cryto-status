@@ -1,0 +1,15 @@
+#!/usr/bin/env python2
+
+import yaml, os, stat, binascii
+from nacl.public import PrivateKey
+
+privkey = PrivateKey.generate()
+pubkey = privkey.public_key
+
+with open("privkey.dat", "w") as f:
+	f.write(binascii.hexlify(str(privkey)))
+
+with open("pubkey.dat", "w") as f:
+	f.write(binascii.hexlify(str(pubkey)))
+
+os.chmod("privkey.dat", stat.S_IRUSR | stat.S_IWUSR)
