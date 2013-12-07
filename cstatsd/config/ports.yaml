@@ -1,0 +1,5 @@
+interval: 5
+
+ports:
+        6667: UnrealIRCd
+        3456: Tahoe-LAFS
