@@ -1,1 +1,3 @@
 cstatsd/config/*.yaml
+ccollectd/config.yaml
+*.pyc

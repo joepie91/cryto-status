@@ -1,0 +1,42 @@
+#!/usr/bin/env python2
+
+import zmq, msgpack, yaml, zmqtimer
+
+ctx = zmq.Context()
+
+poller = zmq.Poller()
+
+def test():
+	print "TEST"
+
+def test10():
+	print "TEST 10"
+
+# Perhaps connect back to configured nodes...? Nodes could send pubkey-encrypted data...
+# process manager, like port manager
+
+with open("config.yaml", "r") as cfile:
+	config = yaml.safe_load(cfile)
+	
+nodes = config["nodes"]
+socket_map = {}
+timers = zmqtimer.ZmqTimerManager()
+timers.add_timer(zmqtimer.ZmqTimer(1, test))
+timers.add_timer(zmqtimer.ZmqTimer(10.2, test10))
+
+for hostname, node in config["nodes"].iteritems():
+	grabber = ctx.socket(zmq.PULL)
+	grabber.connect(node["endpoint"])
+	socket_map[grabber] = hostname
+	poller.register(grabber, zmq.POLLIN)
+
+while True:
+	timers.check()
+	socks = dict(poller.poll(timers.get_next_interval()))
+	
+	for sock in socks:
+		if socks[sock] == zmq.POLLIN:
+			host = socket_map[sock]
+			message = msgpack.unpackb(sock.recv())
+			print "%s: %s" % (host, message)
+		

@@ -1,12 +1,18 @@
 #!/usr/bin/env python2
 
-import zmq, msgpack
+import zmq, yaml
 
 ctx = zmq.Context()
+
+with open("config/cstatsd.yaml", "r") as cfile:
+	config = yaml.safe_load(cfile)
 
 collector = ctx.socket(zmq.PULL)
 collector.bind("ipc:///tmp/cstatsd")
 
+shipper = ctx.socket(zmq.PUSH)
+shipper.bind(config["endpoint"])
+
 while True:
-	message = msgpack.unpackb(collector.recv())
-	print message
+	#print msgpack.unpackb(collector.recv())
+	shipper.send(collector.recv())
