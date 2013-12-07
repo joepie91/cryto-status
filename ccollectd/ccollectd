@@ -1,30 +1,32 @@
 #!/usr/bin/env python2
 
-import zmq, msgpack, yaml, zmqtimer
+import zmq, msgpack, yaml, zmqtimer, binascii, nacl, sys
+from nacl.public import PublicKey, PrivateKey, Box
 
 ctx = zmq.Context()
 
+distributor = ctx.socket(zmq.PUB)
+distributor.bind("ipc:///tmp/ccollectd-stats")
+
 poller = zmq.Poller()
 
-def test():
-	print "TEST"
-
-def test10():
-	print "TEST 10"
-
-# Perhaps connect back to configured nodes...? Nodes could send pubkey-encrypted data...
-# process manager, like port manager
+def heartbeat():
+	pass # TO DO: Check if all endpoints are still pingable...
 
 with open("config.yaml", "r") as cfile:
 	config = yaml.safe_load(cfile)
-	
+
+with open("privkey.dat", "r") as f:
+	privkey = PrivateKey(binascii.unhexlify(f.read()))
+
 nodes = config["nodes"]
 socket_map = {}
+boxes = {}
 timers = zmqtimer.ZmqTimerManager()
-timers.add_timer(zmqtimer.ZmqTimer(1, test))
-timers.add_timer(zmqtimer.ZmqTimer(10.2, test10))
+timers.add_timer(zmqtimer.ZmqTimer(5, heartbeat))
 
 for hostname, node in config["nodes"].iteritems():
+	boxes[hostname] = Box(privkey, PublicKey(binascii.unhexlify(node["pubkey"])))
 	grabber = ctx.socket(zmq.PULL)
 	grabber.connect(node["endpoint"])
 	socket_map[grabber] = hostname
@@ -37,6 +39,11 @@ while True:
 	for sock in socks:
 		if socks[sock] == zmq.POLLIN:
 			host = socket_map[sock]
-			message = msgpack.unpackb(sock.recv())
+			try:
+				message = msgpack.unpackb(boxes[host].decrypt(sock.recv()))
+			except nacl.exceptions.CryptoError, e:
+				# Probably a spoofed message... skip to next socket
+				sys.stderr.write("Ignoring message... spoofed?\n") # FIXME: Use logging module...
+				continue
 			print "%s: %s" % (host, message)
 		

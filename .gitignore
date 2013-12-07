@@ -1,3 +1,7 @@
 cstatsd/config/*.yaml
 ccollectd/config.yaml
 *.pyc
+ccollectd/pubkey.dat
+ccollectd/privkey.dat
+cstatsd/pubkey.dat
+cstatsd/privkey.dat

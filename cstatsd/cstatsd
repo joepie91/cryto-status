@@ -1,11 +1,19 @@
 #!/usr/bin/env python2
 
-import zmq, yaml
+import zmq, yaml, binascii, nacl
+from nacl.public import PublicKey, PrivateKey, Box
 
 ctx = zmq.Context()
 
 with open("config/cstatsd.yaml", "r") as cfile:
 	config = yaml.safe_load(cfile)
+
+pubkey = PublicKey(binascii.unhexlify(config["pubkey"]))
+
+with open("privkey.dat", "r") as f:
+	privkey = PrivateKey(binascii.unhexlify(f.read()))
+
+box = Box(privkey, pubkey)
 
 collector = ctx.socket(zmq.PULL)
 collector.bind("ipc:///tmp/cstatsd")
@@ -14,5 +22,6 @@ shipper = ctx.socket(zmq.PUSH)
 shipper.bind(config["endpoint"])
 
 while True:
-	#print msgpack.unpackb(collector.recv())
-	shipper.send(collector.recv())
+	message = collector.recv()
+	nonce = nacl.utils.random(Box.NONCE_SIZE)
+	shipper.send(box.encrypt(message, nonce))

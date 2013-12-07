@@ -1,4 +1,5 @@
 interval: 1
 
 drives:
-        - /
+        - /dev/sda1
+        - /dev/sdb1

@@ -18,23 +18,26 @@ while True:
 	all_procs = psutil.get_process_list()
 	
 	for service_name, patterns in config["processes"].iteritems():
-		matches = all_procs
-		
-		try:
-			matches = filter(lambda proc: len(proc.cmdline) > 0 and fnmatch.fnmatch(proc.cmdline[0], patterns["name"]), matches)
-		except KeyError, e:
-			pass
-		
-		try:
-			for arg, pattern in patterns["args"].iteritems():
-				try:
-					matches = filter(lambda proc: len(proc.cmdline) >= (arg + 1) and fnmatch.fnmatch(proc.cmdline[arg], pattern), matches)
-				except KeyError, e:
-					pass
-		except KeyError, e:
-			pass  # No arguments specified to filter
+		matching = []
+		for proc in all_procs:  # Can't use filter() because of exceptions...
+			try:
+				if len(proc.cmdline) > 0 and fnmatch.fnmatch(proc.cmdline[0], patterns["name"]):
+					failed = False
+					try:
+						for arg, pattern in patterns["args"].iteritems():
+							try:
+								if len(proc.cmdline) < (arg + 1) or not fnmatch.fnmatch(proc.cmdline[arg], pattern):
+									failed = True
+							except KeyError, e:
+								pass
+					except KeyError, e:
+						pass
+					if failed == False:
+						matching.append(proc)
+			except psutil._error.NoSuchProcess, e:
+				pass
 			
-		if len(matches) > 0:
+		if len(matching) > 0:
 			up = True
 		else:
 			up = False

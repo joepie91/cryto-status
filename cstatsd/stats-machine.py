@@ -13,6 +13,12 @@ with open("config/machine.yaml", "r") as cfile:
 interval = config["interval"]
 old_net_data = {}
 
+disk_map = {}
+last_io_data = {}
+
+for disk in psutil.disk_partitions():
+	disk_map[disk.device] = disk
+
 while True:
 	load_avgs = os.getloadavg()
 	sock.send(msgpack.packb({
@@ -40,8 +46,30 @@ while True:
 			}
 		}))
 	
+	io_counters = psutil.disk_io_counters(perdisk=True)
+	
 	for drive in config["drives"]:
-		drive_data = psutil.disk_usage(drive)
+		drive_data = psutil.disk_usage(disk_map[drive].mountpoint)
+		io_data = None
+		
+		for diskname, data in io_counters.iteritems():
+			if drive.endswith(diskname):
+				io_data = data
+				
+		if io_data is None or drive not in last_io_data:
+			read_bps = 0
+			write_bps = 0
+			read_iops = 0
+			write_iops = 0
+		else:
+			read_bps = (io_data.read_bytes - last_io_data[drive].read_bytes) / interval
+			write_bps = (io_data.write_bytes - last_io_data[drive].write_bytes) / interval
+			read_iops = (io_data.read_count - last_io_data[drive].read_count) / interval
+			write_iops = (io_data.write_count - last_io_data[drive].write_count) / interval
+			
+		if io_data is not None:
+			last_io_data[drive] = io_data
+			
 		sock.send(msgpack.packb({
 			"service": "machine",
 			"msg_type": "value",
@@ -51,7 +79,11 @@ while True:
 				"total": drive_data.total,
 				"used": drive_data.used,
 				"free": drive_data.free,
-				"used_percentage": drive_data.percent
+				"used_percentage": drive_data.percent,
+				"bps_read": read_bps,
+				"bps_write": write_bps,
+				"iops_read": read_iops,
+				"iops_write": write_iops,
 			}
 		}))
 		
