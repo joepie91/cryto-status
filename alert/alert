@@ -16,7 +16,7 @@ except IOError, e:
 
 fetcher = ctx.socket(zmq.SUB)
 fetcher.setsockopt(zmq.SUBSCRIBE, "")
-fetcher.connect("ipc:///tmp/ccollectd-stats")
+fetcher.connect("tcp://127.0.0.1:8998")
 
 class Bot(object):
 	def __init__(self, hosts, port, nickname, realname, channels, admins, subsock):

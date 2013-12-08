@@ -6,7 +6,7 @@ from nacl.public import PublicKey, PrivateKey, Box
 ctx = zmq.Context()
 
 distributor = ctx.socket(zmq.PUB)
-distributor.bind("ipc:///tmp/ccollectd-stats")
+distributor.bind("tcp://127.0.0.1:8998")
 
 poller = zmq.Poller()
 
