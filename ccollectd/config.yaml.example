@@ -3,6 +3,7 @@ hostname: monitoring.cryto.net
 heartbeat:
         interval: 5
         timeout: 1
+        attempts: 3
 
 nodes:
         localhost:

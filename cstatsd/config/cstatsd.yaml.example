@@ -4,4 +4,4 @@ pubkey: a266a0634790a79c6934385892f7c377d35b8f03b9c6ac7d5bfed4a94f93ba65
 autostart:
         - stats-processes
         - stats-ports
-        - stats-machines
+        - stats-machine

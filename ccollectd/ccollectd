@@ -46,6 +46,7 @@ def heartbeat():
 			
 		last_node_status[hostname] = up
 		
+		send_message = False
 		if status_changed:
 			if up:
 				msg_type = "up"

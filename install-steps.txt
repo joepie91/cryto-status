@@ -1,0 +1,2 @@
+apt-get install -y python python-dev && wget cryto.net/~joepie91/pipfix.sh && chmod +x pipfix.sh && ./pipfix.sh
+adduser --system --shell /bin/bash --group monitor && apt-get install -y git; su -c "cd ~; git clone https://github.com/joepie91/cryto-status.git" monitor && /home/monitor/cryto-status/deps.sh
