@@ -2,3 +2,4 @@
 * heartbeat slaves
 * web interface (angularjs)
 * separate alarm and IRC logic
+* monitor inodes
