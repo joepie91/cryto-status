@@ -1,3 +1,9 @@
+hostname: monitoring.cryto.net
+
+heartbeat:
+        interval: 5
+        timeout: 1
+
 nodes:
         localhost:
                 ip: 127.0.0.1
