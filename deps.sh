@@ -1,4 +1,4 @@
 #!/bin/bash
 # You need squeeze-backports if you run this on squeeze!
-apt-get install -y libzmq-dev libffi-dev
+apt-get install -y libzmq-dev libffi-dev build-essential
 pip install pyzmq msgpack-python pynacl pyyaml psutil
