@@ -194,7 +194,7 @@ class Bot(object):
 			self.last_down["%(host)s!%(service)s.%(unit)s" % data] = time.time()
 			self.send_all("\x02\x030,4 [ DOWN ] \x03\x02 Service \x032%(service)s\x03 on host \x037%(host)s\x03 reports that \x036%(unit)s\x03 is \x02down!\x02" % data)
 		elif data["msg_type"] == "blip":
-			self.send_all("\x02\x030,4 [ WARNING ] \x03\x02 Service \x032%(service)s\x03 on host \x037%(host)s\x03 reports that a blip occurred for \x036%(unit)s\x03!" % data)
+			self.send_all("\x02\x030,7 [ WARNING ] \x03\x02 Service \x032%(service)s\x03 on host \x037%(host)s\x03 reports that a blip occurred for \x036%(unit)s\x03!" % data)
 		elif data["msg_type"] == "value":
 			for rule_id, rule in rules.iteritems():
 				check_vals = {
