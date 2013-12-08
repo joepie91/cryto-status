@@ -55,7 +55,7 @@ def heartbeat():
 				msg_type = "down"
 				send_message = True
 		else:
-			if retries > 0:
+			if up and retries > 0:
 				msg_type = "blip"
 				send_message = True
 				
