@@ -20,6 +20,7 @@ while True:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.settimeout(0.5)
 			s.connect(("127.0.0.1", port))
+			s.shutdown(socket.SHUT_RDWR)
 			s.close()
 			up = True
 		except socket.error, e:
