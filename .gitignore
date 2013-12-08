@@ -6,3 +6,5 @@ ccollectd/pubkey.dat
 ccollectd/privkey.dat
 cstatsd/pubkey.dat
 cstatsd/privkey.dat
+cstatsd/cstatsd.pid
+alert/rules.pickle

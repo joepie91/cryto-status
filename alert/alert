@@ -120,6 +120,12 @@ class Bot(object):
 					target, rel, value = args[1:4]
 					target = self.parse_target(target)
 					
+					if value[-1].lower() in ("k", "m", "g", "t"):
+						unit = value[-1].lower()
+						value = value[:-1]
+						value = float(value)
+						value = value * (1024 ** (("k", "m", "g", "t").index(unit) + 1))
+					
 					rule_id = uuid.uuid4()
 					rules[rule_id] = {
 						"target": target,
@@ -187,6 +193,8 @@ class Bot(object):
 		elif data["msg_type"] == "down":
 			self.last_down["%(host)s!%(service)s.%(unit)s" % data] = time.time()
 			self.send_all("\x02\x030,4 [ DOWN ] \x03\x02 Service \x032%(service)s\x03 on host \x037%(host)s\x03 reports that \x036%(unit)s\x03 is \x02down!\x02" % data)
+		elif data["msg_type"] == "blip":
+			self.send_all("\x02\x030,4 [ WARNING ] \x03\x02 Service \x032%(service)s\x03 on host \x037%(host)s\x03 reports that a blip occurred for \x036%(unit)s\x03!" % data)
 		elif data["msg_type"] == "value":
 			for rule_id, rule in rules.iteritems():
 				check_vals = {
@@ -196,10 +204,14 @@ class Bot(object):
 					"unit": [data["unit"]]
 				}
 				
+				failed = False
 				for segment in ("host", "service", "resource", "unit"):
 					for val in check_vals[segment]:
 						if rule["target"][segment] is not True and not fnmatch.fnmatch(val, rule["target"][segment]):
-							continue
+							failed = True
+							break
+				if failed:
+					continue # Skip to next
 							
 				# We haven't broken out in the past bit of code, so we're still matching the pattern...
 				eligible_keys = [key for key in data["values"].keys() if fnmatch.fnmatch(key, rule["target"]["attribute"])]
@@ -223,8 +235,6 @@ class Bot(object):
 						alarm = (value != rule_value)
 					else:
 						alarm = False
-						
-					print value, operator, rule_value, alarm
 				
 					self.trigger_alarm(rule_id, data, alarm, value, key)
 	
@@ -234,21 +244,17 @@ class Bot(object):
 		if key not in self.known_alarms:
 			if active:
 				self.transmit_alarm(rule_id, data, active, offending_value, offending_key)
-				print "ALARM ACTIVE, UNKNOWN ENTRY"
 				self.known_alarms[key] = time.time()
 			else:
 				self.known_alarms[key] = False
-				print "ALARM STOP, UNKNOWN ENTRY"
 		else:
 			if self.known_alarms[key] == False and active:
 				# Alarm activated
 				self.transmit_alarm(rule_id, data, active, offending_value, offending_key)
-				print "ALARM ACTIVE, EXISTING ENTRY"
 				self.known_alarms[key] = time.time()
 			elif self.known_alarms[key] != False and not active:
 				# Alarm deactivated
 				self.transmit_alarm(rule_id, data, active, offending_value, offending_key)
-				print "ALARM STOP, EXISTING ENTRY"
 				self.known_alarms[key] = False
 	
 	def transmit_alarm(self, rule_id, data, active, offending_value=None, offending_key=None):

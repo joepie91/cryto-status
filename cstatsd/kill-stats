@@ -1,0 +1,5 @@
+#!/bin/bash
+
+PID=`cat cstatsd.pid`
+pkill -P $PID
+kill $PID

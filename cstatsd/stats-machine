@@ -103,7 +103,7 @@ while True:
 		}
 	}))
 		
-	swap_data = psutil.virtual_memory()
+	swap_data = psutil.swap_memory()
 	sock.send(msgpack.packb({
 		"service": "machine",
 		"msg_type": "value",

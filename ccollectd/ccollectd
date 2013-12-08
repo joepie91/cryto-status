@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-import zmq, msgpack, yaml, zmqtimer, binascii, nacl, sys
+import zmq, msgpack, yaml, zmqtimer, binascii, nacl, sys, socket
 from nacl.public import PublicKey, PrivateKey, Box
 
 ctx = zmq.Context()
@@ -23,15 +23,19 @@ boxes = {}
 
 def heartbeat():
 	for hostname, node in nodes.iteritems():
-		try:
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			s.settimeout(config["heartbeat"]["timeout"])
-			s.connect((node["ip"], node["port"]))
-			s.shutdown(socket.SHUT_RDWR)
-			s.close()
-			up = True
-		except socket.error, e:
-			up = False
+		retries = 0
+		while retries < config["heartbeat"]["attempts"]:
+			try:
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s.settimeout(float(config["heartbeat"]["timeout"]) / (retries + 1))
+				s.connect((node["ip"], node["port"]))
+				s.shutdown(socket.SHUT_RDWR)
+				s.close()
+				up = True
+				break
+			except socket.error, e:
+				up = False
+				retries += 1
 			
 		try:
 			status_changed = (up != last_node_status[hostname])
@@ -45,9 +49,16 @@ def heartbeat():
 		if status_changed:
 			if up:
 				msg_type = "up"
+				send_message = True
 			else:
 				msg_type = "down"
+				send_message = True
+		else:
+			if retries > 0:
+				msg_type = "blip"
+				send_message = True
 				
+		if send_message:
 			distributor.send(msgpack.packb({
 				"host": config["hostname"],
 				"message": {

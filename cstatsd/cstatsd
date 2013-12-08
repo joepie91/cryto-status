@@ -1,7 +1,12 @@
 #!/usr/bin/env python2
 
-import zmq, yaml, binascii, nacl
+import zmq, yaml, binascii, nacl, sys, subprocess, os
 from nacl.public import PublicKey, PrivateKey, Box
+
+basedir = os.path.dirname(os.path.realpath(__file__))
+
+with open("cstatsd.pid", "w") as pidfile:
+	pidfile.write(str(os.getpid()))
 
 ctx = zmq.Context()
 
@@ -20,6 +25,17 @@ collector.bind("ipc:///tmp/cstatsd")
 
 shipper = ctx.socket(zmq.PUSH)
 shipper.bind(config["endpoint"])
+
+try:
+	disable_autostart = (sys.argv[1] == "--disable-autostart")
+except:
+	disable_autostart = False
+	
+if disable_autostart == False:
+	with open("/dev/null", "w+") as stfu:
+		for script in config["autostart"]:
+			print os.path.join(basedir, script)
+			subprocess.Popen([os.path.join(basedir, script)], stdout=stfu, stderr=stfu)
 
 while True:
 	message = collector.recv()
