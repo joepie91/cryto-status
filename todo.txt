@@ -1,0 +1,4 @@
+* allow comments in (parentheses) in units, and ignore these when matching against an alarm pattern...
+* heartbeat slaves
+* web interface (angularjs)
+* separate alarm and IRC logic
