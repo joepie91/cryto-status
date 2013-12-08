@@ -1,0 +1,12 @@
+import socket, yaml, random, zmq, msgpack, time, uuid, fnmatch
+import cPickle as pickle
+
+ctx = zmq.Context()
+
+fetcher = ctx.socket(zmq.SUB)
+fetcher.setsockopt(zmq.SUBSCRIBE, "")
+fetcher.connect("ipc:///tmp/ccollectd-stats")
+
+while True:
+	message = msgpack.unpackb(fetcher.recv())
+	print message
