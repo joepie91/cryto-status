@@ -45,5 +45,8 @@ while True:
 				# Probably a spoofed message... skip to next socket
 				sys.stderr.write("Ignoring message... spoofed?\n") # FIXME: Use logging module...
 				continue
-			print "%s: %s" % (host, message)
+			distributor.send(msgpack.packb({
+				"host": host,
+				"message": message
+			}))
 		

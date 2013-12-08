@@ -1,5 +1,6 @@
 cstatsd/config/*.yaml
 ccollectd/config.yaml
+alert/config.yaml
 *.pyc
 ccollectd/pubkey.dat
 ccollectd/privkey.dat

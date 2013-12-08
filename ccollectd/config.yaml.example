@@ -1,0 +1,6 @@
+nodes:
+        localhost:
+                ip: 127.0.0.1
+                port: 6543
+                endpoint: tcp://127.0.0.1:6543
+                pubkey: bd784ef4065c9bd31627106dc55e26764605a144c6fc45ce93f33cbd19dd7333

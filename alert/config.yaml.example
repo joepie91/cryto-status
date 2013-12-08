@@ -1,0 +1,12 @@
+irc:
+        hosts:
+                - kerpia.cryto.net
+                - box.cryto.net
+                - arvel.cryto.net
+        port: 6667
+        nickname: StatusBot
+        realname: Cryto System Monitoring Service
+        admins:
+                - joepie91
+        channels:
+                - "#test"

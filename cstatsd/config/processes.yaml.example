@@ -1,0 +1,15 @@
+interval: 5
+
+processes:
+        radiotray:
+                name: '*python*'
+                args:
+                        1: /usr/bin/radiotray
+                        
+        guake:
+                name: '*python*'
+                args:
+                        1: /usr/local/bin/guake
+        
+        keepassx:
+                name: keepassx
