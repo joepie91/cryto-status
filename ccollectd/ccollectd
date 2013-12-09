@@ -91,7 +91,7 @@ while True:
 				message = msgpack.unpackb(boxes[host].decrypt(sock.recv()))
 			except nacl.exceptions.CryptoError, e:
 				# Probably a spoofed message... skip to next socket
-				sys.stderr.write("Ignoring message... spoofed?\n") # FIXME: Use logging module...
+				sys.stderr.write("Ignoring message... spoofed? (origin: %s)\n" % host) # FIXME: Use logging module...
 				continue
 			except Exception, e:
 				sys.stderr.write(repr(e) + "\n")
