@@ -1,0 +1,6 @@
+#!/bin/bash
+echo "Generating keypair..."
+./genkey 2>/dev/null
+./bootstrap-config
+echo "Your public key: `cat pubkey.dat`"
+echo "Server IP: `curl -s http://wtfismyip.com/text`" 2>/dev/null

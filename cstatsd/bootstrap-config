@@ -1,0 +1,86 @@
+#!/usr/bin/env python2
+
+import yaml, sys
+
+master_pubkey = raw_input("Public key of the master server: ")
+
+print "You'll now be asked to configure ports to check. If you don't want to configure any ports, just hit enter without entering any information."
+
+ports = {}
+
+while True:
+	port = raw_input("Port number: ")
+	if port.strip() == "":
+		break
+	service_name = raw_input("Service name for port %s: " % port)
+	ports[port] = service_name
+
+print "The same thing, except now for processes to check. Just hit enter without entering any information when you're done; the same goes for the argument list. As a wildcard, you can use *"
+
+services = {}
+
+while True:
+	service_name = raw_input("Service name: ")
+	
+	if service_name.strip() == "":
+		break
+	
+	process_name = raw_input("Process name: ")
+	
+	args = {}
+	argnum = 1
+	while True:
+		arg = raw_input("Argument %d: " % argnum)
+		if arg.strip() == "":
+			break
+		args[argnum] = arg
+		argnum += 1
+		
+	services[service_name] = {
+		"name": process_name,
+		"args": args
+	}
+		
+print "Now enter any disk devices you wish to monitor. Leave empty and hit enter when done."
+
+disks = []
+
+while True:
+	device_name = raw_input("Device name: ")
+	if device_name.strip() == "":
+		break
+	disks.append(device_name)
+	
+# Write config files...
+
+modules = []
+
+modules.append("stats-machine")
+with open("config/machine.yaml.example", "r") as ef:
+	with open("config/machine.yaml", "w") as ff:
+		data = yaml.safe_load(ef.read())
+		data["drives"] = disks
+		ff.write(yaml.dump(data))
+
+if len(ports) > 0:
+	modules.append("stats-ports")
+	with open("config/ports.yaml.example", "r") as ef:
+		with open("config/ports.yaml", "w") as ff:
+			data = yaml.safe_load(ef.read())
+			data["ports"] = ports
+			ff.write(yaml.dump(data))
+
+if len(services) > 0:
+	modules.append("stats-processes")
+	with open("config/processes.yaml.example", "r") as ef:
+		with open("config/processes.yaml", "w") as ff:
+			data = yaml.safe_load(ef.read())
+			data["processes"] = services
+			ff.write(yaml.dump(data))
+
+with open("config/cstatsd.yaml.example", "r") as ef:
+	with open("config/cstatsd.yaml", "w") as ff:
+		data = yaml.safe_load(ef.read())
+		data["pubkey"] = master_pubkey
+		data["autostart"] = modules
+		ff.write(yaml.dump(data))
