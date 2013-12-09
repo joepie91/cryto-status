@@ -3,4 +3,4 @@
 * web interface (angularjs)
 * separate alarm and IRC logic
 * monitor inodes
-* openvz memory accounting...
+* change push/pull sockets to pub/sub sockets for slave -> master communication
