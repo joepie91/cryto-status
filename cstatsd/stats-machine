@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
-import zmq, msgpack, time, psutil, yaml, os
+import zmq, msgpack, time, psutil, yaml, os, subprocess
+from collections import namedtuple
 
 ctx = zmq.Context()
 
@@ -18,6 +19,13 @@ last_io_data = {}
 
 for disk in psutil.disk_partitions():
 	disk_map[disk.device] = disk
+	
+if len(disk_map) == 0:
+	# We're probably on OpenVZ, so /proc/partitions doesn't exist. Fall back to 'df'.
+	FakeDisk = namedtuple("FakeDisk", ["device", "mountpoint"])
+	for line in subprocess.check_output(["df"]).splitlines()[1:]:
+		device, _, _, _, _, mountpoint = line.split()
+		disk_map[device] = FakeDisk(device, mountpoint)
 
 while True:
 	load_avgs = os.getloadavg()
@@ -46,7 +54,10 @@ while True:
 			}
 		}))
 	
-	io_counters = psutil.disk_io_counters(perdisk=True)
+	try:
+		io_counters = psutil.disk_io_counters(perdisk=True)
+	except IOError, e:
+		io_counters = {} # OpenVZ...
 	
 	for drive in config["drives"]:
 		drive_data = psutil.disk_usage(disk_map[drive].mountpoint)
