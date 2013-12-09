@@ -17,6 +17,12 @@ old_net_data = {}
 disk_map = {}
 last_io_data = {}
 
+if os.path.exists("/proc/user_beancounters") and not os.path.exists("/proc/vz/vestat"):
+	openvz_burst = True
+	FakeRam = namedtuple("FakeRam", ["total", "used", "available", "percent", "buffers", "cached"])
+else:
+	openvz_burst = False
+
 for disk in psutil.disk_partitions():
 	disk_map[disk.device] = disk
 	
@@ -98,7 +104,16 @@ while True:
 			}
 		}))
 		
-	ram_data = psutil.virtual_memory()
+	if openvz_burst:
+		# Sigh, OpenVZ... let's use 'free', since that apparently -does- understand OpenVZ.
+		lines = subprocess.check_output(["free", "-b"])
+		_, ram_total, ram_used, ram_free, _, ram_buffers, ram_cached = lines[1]
+		_, _, _, ram_available = lines[2]
+		ram_percent = 1.0 * (ram_total - ram_available) / total * 100
+		ram_data = FakeRam(ram_total, ram_used, ram_available, ram_percent, ram_buffers, ram_cached)
+	else:
+		ram_data = psutil.virtual_memory()
+		
 	sock.send(msgpack.packb({
 		"service": "machine",
 		"msg_type": "value",
