@@ -13,7 +13,7 @@ while True:
 	if port.strip() == "":
 		break
 	service_name = raw_input("Service name for port %s: " % port)
-	ports[port] = service_name
+	ports[int(port)] = service_name
 
 print "The same thing, except now for processes to check. Just hit enter without entering any information when you're done; the same goes for the argument list. As a wildcard, you can use *"
 
