@@ -107,8 +107,8 @@ while True:
 	if openvz_burst:
 		# Sigh, OpenVZ... let's use 'free', since that apparently -does- understand OpenVZ.
 		lines = subprocess.check_output(["free", "-b"])
-		_, ram_total, ram_used, ram_free, _, ram_buffers, ram_cached = lines[1]
-		_, _, _, ram_available = lines[2]
+		_, ram_total, ram_used, ram_free, _, ram_buffers, ram_cached = lines[1].split()
+		_, _, _, ram_available = lines[2].split()
 		ram_percent = 1.0 * (ram_total - ram_available) / total * 100
 		ram_data = FakeRam(ram_total, ram_used, ram_available, ram_percent, ram_buffers, ram_cached)
 	else:
