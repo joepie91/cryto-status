@@ -2,7 +2,7 @@
 * web interface (angularjs)
 * separate alarm and IRC logic
 * monitor inodes
-* watchdog on slave and master
+* watchdog on slave and master -> should send WARN notifications
 * notifications (text, arbitrary-serialized-data as attachment, DEBUG/INFO/WARN/ERR/CRIT)
 * consider redundancy - can already connect multiple masters through pubsub, how to deal with duplicate processing checking?
 
