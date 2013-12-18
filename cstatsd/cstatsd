@@ -23,7 +23,7 @@ box = Box(privkey, pubkey)
 collector = ctx.socket(zmq.PULL)
 collector.bind("ipc:///tmp/cstatsd")
 
-shipper = ctx.socket(zmq.PUSH)
+shipper = ctx.socket(zmq.PUB)
 shipper.bind(config["endpoint"])
 
 try:

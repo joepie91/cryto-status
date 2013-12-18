@@ -75,7 +75,8 @@ timers.add_timer(zmqtimer.ZmqTimer(config["heartbeat"]["interval"], heartbeat))
 
 for hostname, node in config["nodes"].iteritems():
 	boxes[hostname] = Box(privkey, PublicKey(binascii.unhexlify(node["pubkey"])))
-	grabber = ctx.socket(zmq.PULL)
+	grabber = ctx.socket(zmq.SUB)
+	grabber.setsockopt(zmq.SUBSCRIBE, "")
 	grabber.connect(node["endpoint"])
 	socket_map[grabber] = hostname
 	poller.register(grabber, zmq.POLLIN)
