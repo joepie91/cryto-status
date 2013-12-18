@@ -3,3 +3,52 @@
 * separate alarm and IRC logic
 * monitor inodes
 * watchdog on slave and master
+* notifications (text, arbitrary-serialized-data as attachment, DEBUG/INFO/WARN/ERR/CRIT)
+* consider redundancy - can already connect multiple masters through pubsub, how to deal with duplicate processing checking?
+
+cprocessd:
+ -> subscribe to ccollectd
+ -> debug switch for outputting all to terminal
+ -> keep up/down state
+ -> keep last-value state (resource usage)
+ -> keep track of persistent downtimes (down for more than X time, as configured in config file)
+ -> alarms (move this from the IRC bot to cprocessd)
+ -> classify message importance
+ -> cprocessd-stream socket, PUB that just streams processed data
+ -> cprocessd-query socket, REP that responds to queries
+	-> server-status
+	-> down-list
+	-> last-value
+	-> server-list
+	-> service-list
+
+cmaild:
+ -> use marrow.mailer
+ -> receives data from cprocessd-stream
+ -> sends e-mails for configured importance levels
+
+cbotd:
+ -> currently named 'alert'
+ -> receives data from cprocessd-stream
+ -> IRC bot
+ -> posts alerts to specified IRC channels, depending on minimum severity level configured for that channel (ie. INFO for #cryto-network but ERR for #crytocc)
+ 
+csmsd:
+ -> sends SMS for (critical) alerts
+ -> receives data from cprocessd-stream
+ -> Twilio? does a provider-neutral API exist? might need an extra abstraction...
+
+cwebd:
+ -> offers web interface with streaming status data
+ -> publicly accessible and password-protected
+ -> streaming data from cprocessd-stream
+ -> on-pageload state from cprocessd-query (including 'current downtimes')
+ -> tornado+zmq ioloop, http://zeromq.github.io/pyzmq/eventloop.html
+ -> web dashboard
+	-> AngularJS
+	-> fancy graphs (via AngularJS? idk if a directive exists for this)
+	-> show downtimes as well as live per-machine stats
+	-> also show overview of all machines in a grid, color-coded for average load of all resources
+	-> historical up/down data
+	-> sqlite storage? single concurrent write, so should work
+	-> perhaps letting people sign up for e-mail alerts is an option? to-inbox will be tricky here
